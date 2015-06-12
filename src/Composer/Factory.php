@@ -423,6 +423,7 @@ class Factory
 
         $am = new Archiver\ArchiveManager($dm);
         $am->addArchiver(new Archiver\PharArchiver);
+        $am->addArchiver(new Archiver\GitArchiver);
 
         return $am;
     }
