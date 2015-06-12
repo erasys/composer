@@ -326,12 +326,13 @@ class ClassLoader
             return false;
         }
 
-        $file = $this->findFileWithExtension($class, '.php');
-
+        $exts = ['.php'];
         // Search for Hack files if we are running on HHVM
-        if ($file === null && defined('HHVM_VERSION')) {
-            $file = $this->findFileWithExtension($class, '.hh');
+        if (defined('HHVM_VERSION')) {
+            $exts[] = '.hh';
         }
+
+        $file = $this->findFileWithExtensions($class, $exts);
 
         if ($file === null) {
             // Remember that this class does not exist.
@@ -341,18 +342,22 @@ class ClassLoader
         return $file;
     }
 
-    private function findFileWithExtension($class, $ext)
+    private function findFileWithExtensions($class, array $exts)
     {
-        // PSR-4 lookup
-        $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . $ext;
-
+        $psr4ClassPath = strtr($class, '\\', DIRECTORY_SEPARATOR);
         $first = $class[0];
-        if (isset($this->prefixLengthsPsr4[$first])) {
-            foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
-                if (0 === strpos($class, $prefix)) {
-                    foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
-                        if (is_file($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
-                            return $file;
+
+        foreach ($exts as $ext) {
+            // PSR-4 lookup
+            $logicalPathPsr4 = $psr4ClassPath . $ext;
+
+            if (isset($this->prefixLengthsPsr4[$first])) {
+                foreach ($this->prefixLengthsPsr4[$first] as $prefix => $length) {
+                    if (0 === strpos($class, $prefix)) {
+                        foreach ($this->prefixDirsPsr4[$prefix] as $dir) {
+                            if (is_file($file = $dir . DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $length))) {
+                                return $file;
+                            }
                         }
                     }
                 }
@@ -360,28 +365,35 @@ class ClassLoader
         }
 
         // PSR-4 fallback dirs
-        foreach ($this->fallbackDirsPsr4 as $dir) {
-            if (is_file($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
-                return $file;
+        if (count($this->fallbackDirsPsr4) > 0) {
+            foreach ($exts as $ext) {
+                $logicalPathPsr4 = $psr4ClassPath . $ext;
+                foreach ($this->fallbackDirsPsr4 as $dir) {
+                    if (is_file($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr4)) {
+                        return $file;
+                    }
+                }
             }
         }
 
         // PSR-0 lookup
         if (false !== $pos = strrpos($class, '\\')) {
             // namespaced class name
-            $logicalPathPsr0 = substr($logicalPathPsr4, 0, $pos + 1)
-                . strtr(substr($logicalPathPsr4, $pos + 1), '_', DIRECTORY_SEPARATOR);
+            $psr0ClassPath = substr($psr4ClassPath, 0, $pos + 1)
+                . strtr(substr($psr4ClassPath, $pos + 1), '_', DIRECTORY_SEPARATOR);
         } else {
             // PEAR-like class name
-            $logicalPathPsr0 = strtr($class, '_', DIRECTORY_SEPARATOR) . $ext;
+            $psr0ClassPath = strtr($class, '_', DIRECTORY_SEPARATOR);
         }
 
         if (isset($this->prefixesPsr0[$first])) {
             foreach ($this->prefixesPsr0[$first] as $prefix => $dirs) {
                 if (0 === strpos($class, $prefix)) {
-                    foreach ($dirs as $dir) {
-                        if (is_file($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                            return $file;
+                    foreach ($exts as $ext) {
+                        foreach ($dirs as $dir) {
+                            if (is_file($file = $dir . DIRECTORY_SEPARATOR . $psr0ClassPath . $ext)) {
+                                return $file;
+                            }
                         }
                     }
                 }
@@ -389,15 +401,23 @@ class ClassLoader
         }
 
         // PSR-0 fallback dirs
-        foreach ($this->fallbackDirsPsr0 as $dir) {
-            if (is_file($file = $dir . DIRECTORY_SEPARATOR . $logicalPathPsr0)) {
-                return $file;
+        if (count($this->fallbackDirsPsr0) > 0) {
+            foreach ($exts as $ext) {
+                foreach ($this->fallbackDirsPsr0 as $dir) {
+                    if (is_file($file = $dir . DIRECTORY_SEPARATOR . $psr0ClassPath . $ext)) {
+                        return $file;
+                    }
+                }
             }
         }
 
         // PSR-0 include paths.
-        if ($this->useIncludePath && $file = stream_resolve_include_path($logicalPathPsr0)) {
-            return $file;
+        if ($this->useIncludePath) {
+            foreach ($exts as $ext) {
+                if ($file = stream_resolve_include_path($psr0ClassPath . $ext)) {
+                    return $file;
+                }
+            }
         }
     }
 }
