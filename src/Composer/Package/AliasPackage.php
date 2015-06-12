@@ -327,6 +327,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getDevAutoload();
     }
 
+    public function getAutoloadExtensions()
+    {
+        return $this->aliasOf->getAutoloadExtensions();
+    }
+
     public function getIncludePaths()
     {
         return $this->aliasOf->getIncludePaths();

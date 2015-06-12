@@ -288,7 +288,7 @@ EOF;
         }
         file_put_contents($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $autoloads['extensions']));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
@@ -383,6 +383,7 @@ EOF;
         $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
         $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
+        $extensions = $this->parseExtensions($packageMap, $mainPackage);
 
         krsort($psr0);
         krsort($psr4);
@@ -393,6 +394,7 @@ EOF;
             'classmap' => $classmap,
             'files' => $files,
             'exclude-from-classmap' => $exclude,
+            'extensions' => $extensions
         );
     }
 
@@ -548,7 +550,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000, $autoloadExtensions)
     {
         $file = <<<HEADER
 <?php
@@ -639,6 +641,14 @@ CLASSMAPAUTHORITATIVE;
         $loader->setUseIncludePath(true);
 
 INCLUDEPATH;
+        }
+
+        if ($autoloadExtensions) {
+            $autoloadExtensions = var_export($autoloadExtensions, true);
+            $file .= <<<AUTOLOAD_EXTENSION
+        \$loader->setAutoloadExtensions($autoloadExtensions);
+
+AUTOLOAD_EXTENSION;
         }
 
         if ($targetDirLoader) {
@@ -870,6 +880,19 @@ INITIALIZER;
     protected function getFileIdentifier(PackageInterface $package, $path)
     {
         return md5($package->getName() . ':' . $path);
+    }
+
+    protected function parseExtensions(array $packageMap, PackageInterface $mainPackage) {
+      $extensions = array();
+
+      foreach ($packageMap as $item) {
+        list($package, $installPath) = $item;
+        foreach ($package->getAutoloadExtensions() as $ext) {
+          $extensions[$ext] = $ext;
+        }
+      }
+
+      return array_values($extensions);
     }
 
     /**

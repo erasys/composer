@@ -32,6 +32,7 @@ class ArrayDumper
             'installationSource' => 'installation-source',
             'autoload',
             'devAutoload' => 'autoload-dev',
+            'autoloadExtensions' => 'autoload-extensions',
             'notificationUrl' => 'notification-url',
             'includePaths' => 'include-path',
         );
