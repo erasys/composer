@@ -236,7 +236,7 @@ EOF;
             file_put_contents($targetDir.'/autoload_files.php', $includeFilesFile);
         }
         file_put_contents($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative));
+        file_put_contents($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFile, $targetDirLoader, (bool) $includeFilesFile, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative, $autoloads['extensions']));
 
         // use stream_copy_to_stream instead of copy
         // to work around https://bugs.php.net/bug.php?id=64634
@@ -312,11 +312,12 @@ EOF;
         $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
         $classmap = $this->parseAutoloadsType($sortedPackageMap, 'classmap', $mainPackage);
         $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
+        $extensions = $this->parseExtensions($packageMap, $mainPackage);
 
         krsort($psr0);
         krsort($psr4);
 
-        return array('psr-0' => $psr0, 'psr-4' => $psr4, 'classmap' => $classmap, 'files' => $files);
+        return array('psr-0' => $psr0, 'psr-4' => $psr4, 'classmap' => $classmap, 'files' => $files, 'extensions' => $extensions);
     }
 
     /**
@@ -453,7 +454,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $classMapAuthoritative, $autoloadExtensions)
     {
         // TODO the class ComposerAutoloaderInit should be revert to a closure
         // when APC has been fixed:
@@ -542,6 +543,14 @@ CLASSMAPAUTHORITATIVE;
         $loader->setUseIncludePath(true);
 
 INCLUDEPATH;
+        }
+
+        if ($autoloadExtensions) {
+            $autoloadExtensions = var_export($autoloadExtensions, true);
+            $file .= <<<AUTOLOAD_EXTENSION
+        \$loader->setAutoloadExtensions($autoloadExtensions);
+
+AUTOLOAD_EXTENSION;
         }
 
         if ($targetDirLoader) {
@@ -634,6 +643,20 @@ FOOTER;
         }
 
         return $autoloads;
+    }
+
+    protected function parseExtensions(array $packageMap, PackageInterface $mainPackage) {
+        $extensions = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+            foreach ($package->getAutoloadExtensions() as $ext) {
+                $extensions[$ext] = $ext;
+            }
+        }
+
+        return array_values($extensions);
+
     }
 
     /**

@@ -51,6 +51,7 @@ class Package extends BasePackage
     protected $suggests = array();
     protected $autoload = array();
     protected $devAutoload = array();
+    protected $autoloadExtensions = array();
     protected $includePaths = array();
     protected $archiveExcludes = array();
 
@@ -508,6 +509,24 @@ class Package extends BasePackage
     public function getDevAutoload()
     {
         return $this->devAutoload;
+    }
+
+    /**
+     * Set the autoload extensions
+     *
+     * @param array $extensions
+     */
+    public function setAutoloadExtensions(array $extensions)
+    {
+        $this->autoloadExtensions = $extensions;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAutoloadExtensions()
+    {
+        return $this->autoloadExtensions;
     }
 
     /**

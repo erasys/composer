@@ -56,6 +56,8 @@ class ClassLoader
 
     private $classMapAuthoritative = false;
 
+    private $autoloadExtensions = array();
+
     public function getPrefixes()
     {
         if (!empty($this->prefixesPsr0)) {
@@ -272,6 +274,26 @@ class ClassLoader
     }
 
     /**
+     * Sets autoload extensions
+     *
+     * @param $autoloadExtensions
+     */
+    public function setAutoloadExtensions($autoloadExtensions)
+    {
+        $this->autoloadExtensions = $autoloadExtensions;
+    }
+
+    /**
+     * Returns autoload extensions
+     *
+     * @return array
+     */
+    public function getAutoloadExtensions()
+    {
+        return $this->autoloadExtensions;
+    }
+
+    /**
      * Registers this instance as an autoloader.
      *
      * @param bool $prepend Whether to prepend the autoloader or not
@@ -326,10 +348,14 @@ class ClassLoader
             return false;
         }
 
-        $exts = ['.php'];
-        // Search for Hack files if we are running on HHVM
-        if (defined('HHVM_VERSION')) {
-            $exts[] = '.hh';
+        // set autoload extensions with a reasonable default
+        $exts = $this->autoloadExtensions;
+        if (count($exts) == 0) {
+            $exts = ['.php'];
+            // Search for Hack files if we are running on HHVM
+            if (defined('HHVM_VERSION')) {
+                $exts[] = '.hh';
+            }
         }
 
         $file = $this->findFileWithExtensions($class, $exts);

@@ -279,6 +279,13 @@ interface PackageInterface
     public function getDevAutoload();
 
     /**
+     * Returns an array of autoloading extensions
+     *
+     * @return array
+     */
+    public function getAutoloadExtensions();
+
+    /**
      * Returns a list of directories which should get added to PHP's
      * include path.
      *
