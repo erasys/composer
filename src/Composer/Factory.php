@@ -465,6 +465,7 @@ class Factory
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
         $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
         $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('tar.bz2', new Downloader\Bzip2Downloader($io, $config, $eventDispatcher, $cache));
         $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
         $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
         $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache, $rfs));
@@ -490,6 +491,7 @@ class Factory
         $am = new Archiver\ArchiveManager($dm);
         $am->addArchiver(new Archiver\ZipArchiver);
         $am->addArchiver(new Archiver\PharArchiver);
+        $am->addArchiver(new Archiver\GitArchiver);
 
         return $am;
     }

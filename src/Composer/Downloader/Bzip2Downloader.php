@@ -13,16 +13,11 @@
 namespace Composer\Downloader;
 
 /**
- * Class TarDownloader
+ * Downloader for tar.bz2 files
  *
- * Downloader for uncompressed tar files
- *
- * @author Kirill chEbba Chebunin <iam@chebba.org>
  * @author Konrad Gibaszewski <konrad@syncube.de>
- *
- * @package Composer\Downloader
  */
-class TarDownloader extends ArchiveDownloader {
+class Bzip2Downloader extends ArchiveDownloader {
 
   /**
    * {@inheritDoc}
@@ -30,18 +25,27 @@ class TarDownloader extends ArchiveDownloader {
   protected function extract($file, $path) {
 
     try {
+      // decompress from bz2 to tar
+      $archive = new \PharData($file);
+      $archive->decompress();
+
       // Unpack from tar
+      $file = substr($file, 0, -4) . '.tar';
       $archive = new \PharData($file);
       $archive->extractTo($path, null, true);
 
+      // Remove intermediate tar file
+      unlink($file);
+
     } catch (\UnexpectedValueException $e) {
-      $message = sprintf("Could not unpack from tar archive '%s': %s",
+      $message = sprintf("Could not extract archive '%s': %s",
         $file,
         $e->getMessage()
       );
 
       throw new \RuntimeException($message, $e->getCode(), $e);
     }
+
   }
 
 }

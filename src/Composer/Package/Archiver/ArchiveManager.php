@@ -26,7 +26,7 @@ class ArchiveManager
 {
     protected $downloadManager;
 
-    protected $archivers = array();
+    protected $archivers = [];
 
     /**
      * @var bool
