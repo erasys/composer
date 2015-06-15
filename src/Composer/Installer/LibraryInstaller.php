@@ -196,6 +196,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
             if (substr($initialDownloadPath, 0, strlen($targetDownloadPath)) === $targetDownloadPath
                 || substr($targetDownloadPath, 0, strlen($initialDownloadPath)) === $initialDownloadPath
             ) {
+                $this->io->writeError("   <info>Installation download path changed, wiping library directory</info>");
                 $this->removeCode($initial);
                 $this->installCode($target);
 

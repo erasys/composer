@@ -256,6 +256,7 @@ class DownloadManager
 
         // upgrading from a dist stable package to a dev package, force source reinstall
         if ($target->isDev() && 'dist' === $installationSource) {
+            $this->io->writeError("   <info>Installation source changed from stable to dev, wiping $targetDir</info>");
             $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir);
 
