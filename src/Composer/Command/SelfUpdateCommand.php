@@ -38,7 +38,7 @@ class SelfUpdateCommand extends Command
         $this
             ->setName('self-update')
             ->setAliases(array('selfupdate'))
-            ->setDescription('Updates composer.phar to the latest version.')
+            ->setDescription('Updates composer.phar to the latest version. Do not use in erasys environment!')
             ->setDefinition(array(
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
@@ -58,6 +58,9 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->getIO()->writeError('<error>Composer should not be updated with this command in erasys environment.</error>');
+        return;
+
         $baseUrl = (extension_loaded('openssl') ? 'https' : 'http') . '://' . self::HOMEPAGE;
         $config = Factory::createConfig();
         $remoteFilesystem = new RemoteFilesystem($this->getIO(), $config);
