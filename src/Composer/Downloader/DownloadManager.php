@@ -244,6 +244,7 @@ class DownloadManager
 
         // upgrading from a dist stable package to a dev package, force source reinstall
         if ($target->isDev() && 'dist' === $installationSource) {
+            $this->io->writeError("   <info>Installation source changed from stable to dev, wiping $targetDir</info>");
             $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir);
 
@@ -254,6 +255,7 @@ class DownloadManager
             $target->setInstallationSource($installationSource);
             $downloader->update($initial, $target, $targetDir);
         } else {
+            $this->io->writeError("   <info>Installation type changed from $initialType to $targetType, wiping $targetDir</info>");
             $downloader->remove($initial, $targetDir);
             $this->download($target, $targetDir, 'source' === $installationSource);
         }

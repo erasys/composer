@@ -69,6 +69,7 @@ class GitDriver extends VcsDriver
                     $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated ('.$e->getMessage().')</error>');
                 }
             } else {
+                $this->io->writeError("    <info>Seems not to be a valid git repo, or can't rev-parse; wiping and cloning.</info>");
                 // clean up directory and do a fresh clone into it
                 $fs->removeDirectory($this->repoDir);
 
