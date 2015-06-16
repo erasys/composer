@@ -13,10 +13,6 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Util\Git as GitUtil;
-//use Composer\Util\ProcessExecutor;
-//use Composer\IO\IOInterface;
-//use Composer\Util\Filesystem;
-//use Composer\Config;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -27,10 +23,9 @@ use Composer\Util\Git as GitUtil;
 class GitArchiver implements ArchiverInterface {
 
   protected static $formats = [
-    'zip' => \Phar::ZIP,
-    'tar' => \Phar::TAR,
-    'tar.gz' => \Phar::GZ,
-    'bz2' => \Phar::BZ2,
+    'tar'     => \Phar::TAR,
+    'tar.gz'  => \Phar::GZ,
+    'tar.bz2' => \Phar::BZ2,
   ];
 
   /**
@@ -43,7 +38,7 @@ class GitArchiver implements ArchiverInterface {
     GitUtil::cleanEnv();
 
     try {
-      $tag = shell_exec("cd $sources && git describe");
+      $tag = shell_exec("cd $sources && git describe --tags");
       shell_exec("cd $sources && git archive -o $target $tag");
       return $target;
     } catch (\UnexpectedValueException $e) {
