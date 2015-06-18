@@ -30,12 +30,11 @@ class Bzip2Downloader extends ArchiveDownloader {
       $archive->decompress();
 
       // Unpack from tar
-      $file = substr($file, 0, -4) . '.tar';
-      $archive = new \PharData($file);
-      $archive->extractTo($path, null, true);
+      $tarFile = substr($file, 0, -4) . '.tar';
+      exec('tar xf -C ' . $path . ' ' . $tarFile);
 
       // Remove intermediate tar file
-      unlink($file);
+      unlink($tarFile);
 
     } catch (\UnexpectedValueException $e) {
       $message = sprintf("Could not extract archive '%s': %s",
