@@ -24,7 +24,7 @@ class Bzip2Downloader extends ArchiveDownloader {
    */
   protected function extract($file, $path) {
     try {
-      exec('tar xfj -C ' . $path . ' ' . $file);
+      exec('tar xfj ' . ' ' . $file . ' -C ' . $path);
     } catch (\UnexpectedValueException $e) {
       $message = sprintf("Could not extract archive '%s': %s",
         $file,
