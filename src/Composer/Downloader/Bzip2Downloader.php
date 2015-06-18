@@ -23,19 +23,8 @@ class Bzip2Downloader extends ArchiveDownloader {
    * {@inheritDoc}
    */
   protected function extract($file, $path) {
-
     try {
-      // decompress from bz2 to tar
-      $archive = new \PharData($file);
-      $archive->decompress();
-
-      // Unpack from tar
-      $tarFile = substr($file, 0, -4) . '.tar';
-      exec('tar xf -C ' . $path . ' ' . $tarFile);
-
-      // Remove intermediate tar file
-      unlink($tarFile);
-
+      exec('tar xfj -C ' . $path . ' ' . $file);
     } catch (\UnexpectedValueException $e) {
       $message = sprintf("Could not extract archive '%s': %s",
         $file,
