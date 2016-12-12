@@ -28,8 +28,8 @@ use Composer\Autoload\AutoloadGenerator;
  */
 class Composer
 {
-    const VERSION = '1.2.4';
-    const BRANCH_ALIAS_VERSION = '';
+    const VERSION = '1.2.4-erasys-1';
+    const BRANCH_ALIAS_VERSION = 'erasys';
     const RELEASE_DATE = '2016-12-06 22:00:51';
 
     /**
